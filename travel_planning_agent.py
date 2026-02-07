@@ -5,7 +5,7 @@ from autogen_agentchat.teams import RoundRobinGroupChat
 from autogen_agentchat.ui import Console
 from autogen_ext.models.openai import OpenAIChatCompletionClient
 
-from constants import openai_api_key
+from contants import openai_api_key
 
 model_client = OpenAIChatCompletionClient(
     model="gpt-4.1-nano",
