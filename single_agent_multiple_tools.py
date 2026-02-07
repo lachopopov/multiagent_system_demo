@@ -1,3 +1,5 @@
+import ast
+import operator
 import asyncio
 
 from autogen_agentchat.agents import AssistantAgent
@@ -35,6 +37,34 @@ async def power(a: float, b: float) -> float:
     return a**b
 
 
+def _eval_node(node):
+    """Safely evaluate an AST node (numbers and +, -, *, /, **)."""
+    ops = {
+        ast.Add: operator.add,
+        ast.Sub: operator.sub,
+        ast.Mult: operator.mul,
+        ast.Div: operator.truediv,
+        ast.FloorDiv: operator.floordiv,
+        ast.Mod: operator.mod,
+        ast.Pow: operator.pow,
+        ast.USub: operator.neg,
+    }
+    if isinstance(node, ast.Constant):
+        return node.value
+    if isinstance(node, ast.BinOp):
+        return ops[type(node.op)](_eval_node(node.left), _eval_node(node.right))
+    if isinstance(node, ast.UnaryOp):
+        return ops[type(node.op)](_eval_node(node.operand))
+    raise ValueError("Unsupported expression")
+
+
+async def evaluate(expression: str) -> float:
+    """Evaluate a full mathematical expression (e.g. '2+3*4', '(1+2)*3'). Use this for expressions with multiple operators; it respects BODMAS/order of operations."""
+    expr = expression.strip().replace(" ", "")
+    tree = ast.parse(expr, mode="eval")
+    return float(_eval_node(tree.body))
+
+
 # Create the agent with all calculation tools
 model_client = OpenAIChatCompletionClient(
     model="gpt-4.1-nano",
@@ -43,8 +73,8 @@ model_client = OpenAIChatCompletionClient(
 agent = AssistantAgent(
     name="calculator",
     model_client=model_client,
-    tools=[add, subtract, multiply, divide, power],
-    system_message="You are a calculator assistant. Use the provided tools to perform calculations. Always use tools for math; do not compute in your head.",
+    tools=[evaluate, add, subtract, multiply, divide, power],
+    system_message="You are a calculator assistant. For expressions with multiple operators (e.g. 2+3*4, 10/2+1), always use the 'evaluate' tool with the full expression—it handles BODMAS correctly. Use add/subtract/multiply/divide only for simple two-number operations.",
 )
 
 async def main():
