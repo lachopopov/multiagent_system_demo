@@ -1,0 +1,216 @@
+✅ Test Case 1: Happy Path – Clean Approval with Human-in-Loop
+🎯 Tests
+
+Full agent pipeline
+
+All tools used
+
+Human approval path
+
+🧩 User Input
+
+“We need 50 MacBooks for new engineering hires next quarter. Budget is around 75L. Prefer Apple authorized vendors.”
+
+🔁 Expected Multi-Round Flow
+
+Intake Agent
+
+Extracts all fields
+
+Status: READY_FOR_REVIEW
+
+Policy Agent
+
+SOFT_BLOCK (approval required)
+
+Finance Agent
+
+Budget sufficient
+
+Risk: HIGH
+
+Vendor Risk Agent
+
+Vendor approved, low risk
+
+Reviewer Agent
+
+Decision: ESCALATE_TO_HUMAN
+
+Human Proxy
+
+Approves with conditions
+
+Reviewer Agent
+
+Confirms final outcome
+
+🧠 Why it matters
+
+This is your demo baseline — everything works, nothing breaks.
+
+⚠️ Test Case 2: Missing Required Fields → Clarification Loop
+🎯 Tests
+
+Intake agent clarification
+
+Selector routing back to same agent
+
+Multi-round extraction
+
+🧩 User Input
+
+“Need laptops for new hires.”
+
+🔁 Expected Flow
+
+Intake Agent
+
+Missing: quantity, budget, timeline
+
+Status: INCOMPLETE
+
+User
+
+“50 laptops, budget ~40L”
+
+Intake Agent
+
+Still missing timeline
+
+User
+
+“Next quarter”
+
+Intake Agent
+
+Status: READY_FOR_REVIEW
+
+Continue normal pipeline…
+
+🧠 Why it matters
+
+Shows stateful conversation and non-linear flow.
+
+❌ Test Case 3: Hard Policy Violation → Forced Rejection
+🎯 Tests
+
+Policy hard block
+
+Early termination
+
+Reviewer override prevention
+
+🧩 User Input
+
+“Purchase crypto mining GPUs worth 1.2 crore for experimentation.”
+
+🔁 Expected Flow
+
+Intake Agent
+
+Extracts fields
+
+Policy Agent
+
+HARD_BLOCK (restricted category + amount)
+
+Reviewer Agent
+
+Decision: REJECT
+
+Human Proxy
+
+Optional override attempt
+
+Reviewer Agent
+
+Enforces policy rejection
+
+🧠 Why it matters
+
+Demonstrates guardrails beat humans when required.
+
+💸 Test Case 4: Budget Insufficient → Human Negotiation Loop
+🎯 Tests
+
+Finance agent blocking
+
+Human modifying request
+
+Re-evaluation cycle
+
+🧩 User Input
+
+“Need 50 MacBooks for engineering. Budget is 90L.”
+
+🔁 Expected Flow
+
+Intake Agent
+
+READY_FOR_REVIEW
+
+Finance Agent
+
+Budget insufficient (only 80L available)
+
+Reviewer Agent
+
+ESCALATE_TO_HUMAN
+
+Human Proxy
+
+Modifies: “Reduce quantity to 45, cap budget at 70L”
+
+Finance Agent
+
+Budget OK
+
+Reviewer Agent
+
+Escalate again or approve
+
+🧠 Why it matters
+
+Shows human correction mid-flight and re-entry into flow.
+
+🕵️ Test Case 5: Unknown Vendor → Risk Escalation
+🎯 Tests
+
+Vendor risk detection
+
+Soft block handling
+
+Human approval override
+
+🧩 User Input
+
+“Buy 30 laptops from XYZ Tech Solutions, budget 25L.”
+
+🔁 Expected Flow
+
+Intake Agent
+
+Extracts fields
+
+Vendor Risk Agent
+
+Vendor status: UNKNOWN
+
+Risk: MEDIUM
+
+Reviewer Agent
+
+ESCALATE_TO_HUMAN
+
+Human Proxy
+
+Approves with condition: “Vendor onboarding required”
+
+Reviewer Agent
+
+Records conditional approval
+
+🧠 Why it matters
+
+Very common real-world enterprise scenario.
